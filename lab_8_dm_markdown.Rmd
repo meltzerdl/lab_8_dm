@@ -49,3 +49,31 @@ leaflet(oil_sf) %>%
   addMarkers()
 ```
 
+### tmap plot with TX state shapefile
+```{r}
+states <- st_read(dsn = ".", layer= "states")
+
+tex_border <- states %>% 
+  filter(STATE_NAME == "Texas") %>% 
+  st_transform(4326)
+
+plot(tex_border)
+
+tm_shape(tex_border) +
+  tm_polygons() +
+  tm_shape(oil_sf) +
+  tm_dots(size = 0.3)
+```
+
+### convert to spatial point patterns (combo of point data and bounding window)
+##we have to convert this to point pattern data to be able to do this outside of sf
+```{r}
+spill_sp <- as(oil_sf, "Spatial")
+spill_ppp <- as(spill_sp, "ppp")
+
+tx_sp <- as(tex_border, "Spatial")
+tex_owin <- as(tx_sp, "owin")
+
+all_ppp <- ppp(spill_ppp$x, spill_ppp$y, window = tex_owin)
+```
+
